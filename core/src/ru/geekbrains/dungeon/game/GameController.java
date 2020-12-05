@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.PropertiesUtils;
 import lombok.Data;
+import ru.geekbrains.dungeon.game.units.Unit;
 import ru.geekbrains.dungeon.helpers.Assets;
 import ru.geekbrains.dungeon.screens.ScreenManager;
 
@@ -43,6 +44,7 @@ public class GameController {
 
     private int cursorX, cursorY;
     private int round;
+    private int heroMovesAndAttacks;
     private float worldTimer;
 
     public GameController(SpriteBatch batch) {
@@ -58,6 +60,7 @@ public class GameController {
         this.infoController = new InfoController();
         this.unitController.init(INITIAL_MONSTERS_COUNT);
         this.round = 1;
+        this.heroMovesAndAttacks = 0;
         this.createGui();
         this.stage.addActor(unitController.getHero().getGuiGroup());
 //        this.music = Gdx.audio.newMusic(Gdx.files.internal("music/theme.mp3"));
@@ -76,9 +79,24 @@ public class GameController {
         }
     }
 
+    // 5. * Когда здоровье падает до 0, нужно перекинуть игрока на экран Game Over
+    public void gameOver() {
+        ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAMEOVER);
+    }
+
+    // 2. На деревьях растут ягоды (не на всех), их можно собирать. Каждый 5 ход,
+    // на случайном дереве растет ягода
+    public void heroMovesAndAttacksUp() {
+        heroMovesAndAttacks++;
+        if (heroMovesAndAttacks % 5 == 0) {
+            gameMap.putBerryInRandomCell();
+        }
+    }
+
     public boolean isCellEmpty(int cx, int cy) {
         return gameMap.isCellPassable(cx, cy) && unitController.isCellFree(cx, cy);
     }
+
 
     public void update(float dt) {
         worldTimer += dt;
@@ -106,6 +124,16 @@ public class GameController {
             mouse.y += pressedMouse.y - mouse.y;
 
             ScreenManager.getInstance().pointCameraTo(camX, camY);
+        }
+
+        //ВОПРОС Это лучше сделать здесь или в классе HERO?
+
+        // 4. Если кликнуть на дерево, то персонаж съедает все ягоды с него и заполняет сытость
+        if (Gdx.input.isTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
+                unitController.getCurrentUnit().getType() == Unit.UnitType.HERO) {
+            unitController.getHero().getStats().incSatiety(
+                    gameMap.getBerries(unitController.getHero().getCellX(), unitController.getHero().getCellY(),
+                            cursorX, cursorY));
         }
 
         cursorX = (int) (mouse.x / GameMap.CELL_SIZE);

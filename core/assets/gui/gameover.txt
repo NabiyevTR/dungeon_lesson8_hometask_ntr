@@ -1,0 +1,2 @@
+btn_new_menu_x=480
+btn_new_menu_y=300

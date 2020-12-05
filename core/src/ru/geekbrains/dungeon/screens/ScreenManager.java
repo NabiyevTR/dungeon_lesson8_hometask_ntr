@@ -12,7 +12,7 @@ import ru.geekbrains.dungeon.helpers.Assets;
 
 public class ScreenManager {
     public enum ScreenType {
-        MENU, GAME
+        MENU, GAME, GAMEOVER
     }
 
     public static final int WORLD_WIDTH = 1280;
@@ -26,6 +26,7 @@ public class ScreenManager {
     private LoadingScreen loadingScreen;
     private GameScreen gameScreen;
     private MenuScreen menuScreen;
+    private GameOverScreen gameOverScreen;
 
     private Screen targetScreen;
     private Viewport viewport;
@@ -56,6 +57,7 @@ public class ScreenManager {
         this.gameScreen = new GameScreen(batch);
         this.menuScreen = new MenuScreen(batch);
         this.loadingScreen = new LoadingScreen(batch);
+        this.gameOverScreen = new GameOverScreen(batch);
     }
 
     public void resize(int width, int height) {
@@ -92,6 +94,10 @@ public class ScreenManager {
             case GAME:
                 targetScreen = gameScreen;
                 Assets.getInstance().loadAssets(ScreenType.GAME);
+                break;
+            case GAMEOVER:
+                targetScreen = gameOverScreen;
+                Assets.getInstance().loadAssets(ScreenType.GAMEOVER);
                 break;
         }
     }
