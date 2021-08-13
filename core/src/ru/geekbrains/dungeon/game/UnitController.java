@@ -47,6 +47,8 @@ public class UnitController {
             this.createMonsterInRandomCell();
         }
         this.createMonster(3, 1);
+        this.createMonster(4, 1);
+        this.createMonster(5, 1);
         this.index = -1;
         this.nextTurn();
     }

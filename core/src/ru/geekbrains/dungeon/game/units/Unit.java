@@ -60,6 +60,10 @@ public abstract class Unit implements Poolable {
     StringBuilder stringHelper;
     Direction currentDirection;
 
+    public enum UnitType {HERO, MONSTER}
+
+    UnitType type;
+
     float timePerFrame;
     float walkingTime;
 
@@ -75,9 +79,9 @@ public abstract class Unit implements Poolable {
         return (cellY + 1) * GameMap.CELL_SIZE;
     }
 
-    public Unit(GameController gc, int cellX, int cellY, int hpMax, String textureName) {
+    public Unit(GameController gc, int cellX, int cellY, int hpMax, int satietyMax, String textureName) {
         this.gc = gc;
-        this.stats = new Stats(1, hpMax, 1, 5, 1, 5);
+        this.stats = new Stats(1, hpMax, satietyMax, 1, 5, 1, 5);
         this.cellX = cellX;
         this.cellY = cellY;
         this.targetX = cellX;
@@ -150,6 +154,7 @@ public abstract class Unit implements Poolable {
             targetY = argCellY;
             currentDirection = Direction.getMoveDirection(cellX, cellY, targetX, targetY);
         }
+
     }
 
     public boolean canIAttackThisTarget(Unit target, int cost) {
@@ -168,7 +173,10 @@ public abstract class Unit implements Poolable {
             }
         }
         stats.attackPoints--;
-
+        if (type == UnitType.HERO) {
+            gc.heroMovesAndAttacksUp();
+            stats.decSatiety(1);
+        }
         gc.getEffectController().setup(target.getCellCenterX(), target.getCellCenterY(), weapon.getFxIndex());
     }
 
@@ -182,6 +190,10 @@ public abstract class Unit implements Poolable {
                 cellX = targetX;
                 cellY = targetY;
                 stats.movePoints--;
+                if (type == UnitType.HERO) {
+                    gc.heroMovesAndAttacksUp();
+                    stats.decSatiety(1);
+                }
                 gc.getGameMap().checkAndTakeDrop(this);
             }
         }
@@ -222,7 +234,6 @@ public abstract class Unit implements Poolable {
         }
         batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
-
 
     public boolean amIBlocked() {
         return !(gc.isCellEmpty(cellX - 1, cellY) || gc.isCellEmpty(cellX + 1, cellY) || gc.isCellEmpty(cellX, cellY - 1) || gc.isCellEmpty(cellX, cellY + 1));
